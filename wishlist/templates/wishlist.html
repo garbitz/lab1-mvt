@@ -2,8 +2,9 @@
 
 {% block content %}
 <div class="topnav">
+    <b><a class="nav_name">Welcome back, {{nama}}</a></b>
     <a class="active" href="{% url 'wishlist:show_wishlist' %}">Home</a>
-    <a href="{% url 'wishlist:logout' %}">Logout</a>
+    <a class="exit" href="{% url 'wishlist:logout' %}">Logout</a>
 </div>
 
 <h5>Nama: <b>{{nama}}</b> </h5>
