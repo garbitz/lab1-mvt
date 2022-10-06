@@ -1,7 +1,9 @@
+from __future__ import with_statement
+import json
 from django.shortcuts import render
 from django.shortcuts import render
 from wishlist.models import BarangWishlist
-from django.http import HttpResponse
+from django.http import HttpRequest, HttpResponse
 from django.core import serializers
 from django.shortcuts import redirect
 from django.contrib.auth.forms import UserCreationForm
@@ -12,6 +14,7 @@ from django.contrib.auth.decorators import login_required
 import datetime
 from django.http import HttpResponseRedirect
 from django.urls import reverse
+from wishlist.forms import BarangWishlistForm
 
 # Create your views here.
 @login_required(login_url='/wishlist/login/')
@@ -74,6 +77,35 @@ def logout_user(request):
     response = HttpResponseRedirect(reverse('wishlist:login'))
     response.delete_cookie('last_login')
     return response
+
+def show_ajax(request):
+    data_barang_wishlist = BarangWishlist.objects.all()
+    context = {
+        'list_barang': data_barang_wishlist,
+        'nama': 'Abizar',
+        # 'last_login': request.COOKIES['last_login'],
+    }
+    return render(request, "wishlist_ajax.html", context)
+
+def add_data(request: HttpRequest):
+    if request.method == "POST":
+        nama_barang = request.POST.get("nama_barang")
+        harga_barang = request.POST.get("harga_barang")
+        deskripsi = request.POST.get("deskripsi")
+
+        new_barang = BarangWishlist(
+            nama_barang=nama_barang,
+            harga_barang=harga_barang,
+            deskripsi=deskripsi,
+        )
+        new_barang.save()
+        return HttpResponse(
+            serializers.serialize("json", [new_barang]),
+            content_type="application/json",
+        )
+
+    return HttpResponse("Invalid method", status_code=405)
+
 
 
 

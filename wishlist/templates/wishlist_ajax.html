@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% load static %}
+
+
+
+
+
+{% block content %}
+<div class="topnav">
+    <b><a class="nav_name">Welcome back, {{nama}}</a></b>
+    <a class="active" href="{% url 'wishlist:show_wishlist' %}">Home</a>
+    <a class="exit" href="{% url 'wishlist:logout' %}">Logout</a>
+</div>
+
+<h5>Nama: <b>{{nama}}</b> </h5>
+
+<form method="POST" action="" >
+    {% csrf_token %}
+    <table>
+        <th>
+            <td>Nama Barang: </td>
+            <td><input type="text" name="nama_barang" placeholder="name" class="form-control"></td>
+        </th>
+                
+        <th>
+            <td>Harga Barang: </td>
+            <td><input type="text" name="price" placeholder="price" class="form-control"></td>
+        </th>
+
+        <th>
+            <td>Deskripsi: </td>
+            <td><input type="text" name="desc" placeholder="desc" class="form-control"></td>
+        </th>
+
+        <th>
+            <td></td>
+            <td><input class="btn btn-outline-dark btn-lg px-5" type="submit" value="Create" id="btnSubmit"></td>        </th>
+    </table>
+</form>
+
+
+<table class="table">
+    <tr>
+    <th>Nama Barang</th>
+    <th>Harga Barang</th>
+    <th>Deskripsi</th>
+    </tr>
+    {% comment %} Tambahkan data di bawah baris ini {% endcomment %}
+    <tbody id="tblData">
+
+    </tbody>
+    
+</table>
+
+<!-- <h5>Sesi terakhir login: {{ last_login }}</h5> -->
+
+<div class="logout">
+    <button><a href="{% url 'wishlist:logout' %}">Logout</a></button>
+</div>
+
+<script src="{% static 'js/wishlist_ajax.js' %}" defer></script>
+<script type="text/javascript">window.CSRF_TOKEN = "{{ csrf_token }}"</script> 
+<script>
+    function postNew(e) {
+      e.preventDefault()
+      const namaBarang = $("#nama_barang").val()
+      const hargaBarang = $("#harga_barang").val()
+      const deskripsi = $("#deskripsi").val()
+  
+      const data = {
+        nama_barang: namaBarang,
+        harga_barang: hargaBarang,
+        deskripsi,
+        csrfmiddlewaretoken: "{{ csrf_token }}"
+      }
+  
+      $.ajax({
+        type: 'POST',
+        url: '{% url 'wishlist:add_data' %}',
+        data: data, 
+        success: () => {
+          fetchData()
+        },
+        dataType: 'json'
+      });
+    }
+  
+    function writeTable(data) {
+      const table = $("#tblData")
+      table.empty()
+      for (let i = 0; i < data.length; i++) {
+        table.append(`
+          <tr>
+            <td>${data[i].fields.nama_barang}</td>
+            <td>${data[i].fields.harga_barang}</td>
+            <td>${data[i].fields.deskripsi}</td>
+          </tr>
+          `)
+      }
+    }
+  
+    function fetchData() {
+      $.get("/wishlist/json", writeTable)
+    }
+  
+    $(document).ready(() => {
+      $("#btnSubmit").click(postNew)
+      fetchData()
+    })
+  </script>
+
+{% endblock content %}
